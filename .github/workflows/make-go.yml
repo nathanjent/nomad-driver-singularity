@@ -1,0 +1,48 @@
+name: Make Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    strategy:
+      matrix:
+        go-version: [1.14.x, 1.15.x]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Download Dependencies
+      run: make dep
+      
+    - name: Cache
+      uses: actions/cache@v2.1.3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+        
+    - name: Build
+      run: make build
+
+    - name: Test
+      run: make test
+      
+    - name: Archive Release
+      run: tar -czf nomad-driver-singularity.tar.gz nomad-driver-singularity
+      
+    - name: Update Release
+      uses: johnwbyrd/update-release@v1.0.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: nomad-driver-singularity.tar.gz
