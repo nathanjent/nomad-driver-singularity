@@ -39,7 +39,7 @@ jobs:
       run: make test
       
     - name: Archive Release
-      run: tar -czf nomad-driver-singularity
+      run: tar -czf nomad-driver-singularity.tar.gz nomad-driver-singularity
       
     - name: Update Release
       uses: johnwbyrd/update-release@v1.0.0
